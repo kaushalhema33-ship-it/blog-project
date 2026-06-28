@@ -1,91 +1,155 @@
 <?php
 include("db.php");
 
-$message = "";
+$message="";
 
 if(isset($_POST['register'])){
 
     $username = trim($_POST['username']);
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $password = trim($_POST['password']);
 
-    $check = mysqli_query($conn, "SELECT * FROM users WHERE username='$username'");
+    if($username=="" || $password==""){
+        $message="All fields are required.";
+    }else{
 
-    if(mysqli_num_rows($check) > 0){
-        $message = "Username already exists!";
-    } else {
-        $sql = "INSERT INTO users(username,password)
-                VALUES('$username','$password')";
+        $check=$conn->prepare("SELECT id FROM users WHERE username=?");
+        $check->bind_param("s",$username);
+        $check->execute();
+        $result=$check->get_result();
 
-        if(mysqli_query($conn,$sql)){
-            $message = "Registration Successful!";
-        } else {
-            $message = "Something went wrong!";
+        if($result->num_rows>0){
+
+            $message="Username already exists.";
+
+        }else{
+
+            $hash=password_hash($password,PASSWORD_DEFAULT);
+
+            $stmt=$conn->prepare("INSERT INTO users(username,password) VALUES(?,?)");
+            $stmt->bind_param("ss",$username,$hash);
+
+            if($stmt->execute()){
+
+                header("Location: login.php");
+
+                exit();
+
+            }else{
+
+                $message="Registration Failed.";
+
+            }
+
         }
+
     }
+
 }
 ?>
+
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Register</title>
-    <style>
-        body{
-            font-family:Arial;
-            background:#f2f2f2;
-        }
-        .box{
-            width:350px;
-            margin:80px auto;
-            background:white;
-            padding:20px;
-            border-radius:10px;
-            box-shadow:0 0 10px gray;
-        }
-        input{
-            width:100%;
-            padding:10px;
-            margin:10px 0;
-        }
-        button{
-            width:100%;
-            padding:10px;
-            background:green;
-            color:white;
-            border:none;
-            cursor:pointer;
-        }
-        p{
-            color:red;
-            text-align:center;
-        }
-        a{
-            text-decoration:none;
-        }
-    </style>
+
+<title>Register</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
 </head>
-<body>
-<div class="box">
-<h2 align="center">Register</h2>
-<p><?php echo $message; ?></p>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+<div class="row justify-content-center">
+
+<div class="col-md-5">
+
+<div class="card shadow">
+
+<div class="card-header bg-success text-white">
+
+<h3 class="text-center">
+
+Register
+
+</h3>
+
+</div>
+
+<div class="card-body">
+
+<?php
+
+if($message!=""){
+
+echo "<div class='alert alert-danger'>$message</div>";
+
+}
+
+?>
+
 <form method="POST">
 
-<input type="text" name="username" placeholder="Enter Username" required>
+<div class="mb-3">
 
-<input type="password" name="password" placeholder="Enter Password" required>
+<label>Username</label>
 
-<button name="register">Register</button>
+<input
+type="text"
+name="username"
+class="form-control"
+required>
+
+</div>
+
+<div class="mb-3">
+
+<label>Password</label>
+
+<input
+type="password"
+name="password"
+class="form-control"
+required>
+
+</div>
+
+<button
+class="btn btn-success w-100"
+name="register">
+
+Register
+
+</button>
 
 </form>
 
 <br>
 
-<center>
+<div class="text-center">
+
 Already have an account?
-<br><br>
-<a href="login.php">Login Here</a>
-</center>
+
+<a href="login.php">
+
+Login
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
 
 </div>
 
 </body>
+
 </html>

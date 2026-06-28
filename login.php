@@ -6,94 +6,135 @@ $message = "";
 
 if(isset($_POST['login'])){
 
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
 
-    // user fetch
-    $sql = "SELECT * FROM users WHERE username='$username'";
-    $result = mysqli_query($conn, $sql);
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
+    $stmt->bind_param("s",$username);
+    $stmt->execute();
 
-    if(mysqli_num_rows($result) > 0){
+    $result = $stmt->get_result();
 
-        $row = mysqli_fetch_assoc($result);
+    if($result->num_rows == 1){
 
-        // password check
-        if(password_verify($password, $row['password'])){
+        $row = $result->fetch_assoc();
 
-            $_SESSION['username'] = $username;
+        if(password_verify($password,$row['password'])){
+
+            $_SESSION['username'] = $row['username'];
 
             header("Location: dashboard.php");
             exit();
 
-        } else {
-            $message = "Wrong Password!";
+        }else{
+
+            $message = "Invalid Password!";
+
         }
 
-    } else {
-        $message = "User not found!";
+    }else{
+
+        $message = "User Not Found!";
+
     }
+
 }
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
-    <style>
-        body{
-            font-family: Arial;
-            background:#f2f2f2;
-        }
-        .box{
-            width:350px;
-            margin:100px auto;
-            background:white;
-            padding:20px;
-            border-radius:10px;
-            box-shadow:0 0 10px gray;
-        }
-        input{
-            width:100%;
-            padding:10px;
-            margin:10px 0;
-        }
-        button{
-            width:100%;
-            padding:10px;
-            background:blue;
-            color:white;
-            border:none;
-            cursor:pointer;
-        }
-        p{
-            color:red;
-            text-align:center;
-        }
-    </style>
+
+<meta charset="UTF-8">
+
+<title>Login</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
 </head>
-<body>
 
-<div class="box">
+<body class="bg-light">
 
-    <h2 align="center">Login</h2>
+<div class="container mt-5">
 
-    <p><?php echo $message; ?></p>
+<div class="row justify-content-center">
 
-    <form method="POST">
+<div class="col-md-5">
 
-        <input type="text" name="username" placeholder="Username" required>
+<div class="card shadow">
 
-        <input type="password" name="password" placeholder="Password" required>
+<div class="card-header bg-primary text-white text-center">
 
-        <button name="login">Login</button>
+<h2>Login</h2>
 
-    </form>
+</div>
 
-    <br>
+<div class="card-body">
 
-    <center>
-        Don't have account? <a href="register.php">Register</a>
-    </center>
+<?php
+if($message!=""){
+echo "<div class='alert alert-danger'>$message</div>";
+}
+?>
+
+<form method="POST">
+
+<div class="mb-3">
+
+<label>Username</label>
+
+<input
+type="text"
+name="username"
+class="form-control"
+required>
+
+</div>
+
+<div class="mb-3">
+
+<label>Password</label>
+
+<input
+type="password"
+name="password"
+class="form-control"
+required>
+
+</div>
+
+<button
+type="submit"
+name="login"
+class="btn btn-primary w-100">
+
+Login
+
+</button>
+
+</form>
+
+<br>
+
+<div class="text-center">
+
+Don't have an account?
+
+<a href="register.php">
+
+Register
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
 
 </div>
 

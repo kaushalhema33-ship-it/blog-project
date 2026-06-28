@@ -1,15 +1,14 @@
 <?php
+
 include("auth.php");
 include("db.php");
 
-$id = $_GET['id'];
+$id=$_GET['id'];
 
-$sql = "DELETE FROM posts WHERE id=$id";
+mysqli_query($conn,"DELETE FROM posts WHERE id=$id");
 
-if(mysqli_query($conn,$sql)){
-    header("Location: index.php");
-    exit();
-} else {
-    echo "Error deleting post";
-}
+header("Location:index.php?msg=deleted");
+
+exit();
+
 ?>

@@ -1,9 +1,7 @@
 <?php
+$conn = mysqli_connect("localhost","root","","blog");
 
-$conn = mysqli_connect("localhost", "root", "", "blog");
-
-if (!$conn) {
-    die("Database Connection Failed");
+if(!$conn){
+    die("Database Connection Failed: " . mysqli_connect_error());
 }
-
 ?>

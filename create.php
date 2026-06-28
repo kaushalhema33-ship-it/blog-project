@@ -1,35 +1,133 @@
-<?php
+ <?php
 include("auth.php");
 include("db.php");
 
 if(isset($_POST['submit'])){
 
-    $title = $_POST['title'];
-    $content = $_POST['content'];
+    $title = trim($_POST['title']);
+    $content = trim($_POST['content']);
 
-    $sql = "INSERT INTO posts(title, content) VALUES('$title','$content')";
+    if($title=="" || $content==""){
+        $error = "All fields are required!";
+    }else{
 
-    if(mysqli_query($conn,$sql)){
-        echo "Post Created Successfully";
-    } else {
-        echo "Error";
+        $stmt = $conn->prepare("INSERT INTO posts(title,content) VALUES(?,?)");
+        $stmt->bind_param("ss",$title,$content);
+
+        if($stmt->execute()){
+            header("Location: index.php?msg=added");
+            exit();
+        }else{
+            $error = "Something went wrong!";
+        }
+
+        $stmt->close();
     }
 }
 ?>
 
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Create Post</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+<div class="card shadow">
+
+<div class="card-header bg-success text-white">
+
 <h2>Add New Post</h2>
+
+</div>
+
+<div class="card-body">
+
+<?php
+if(isset($error)){
+?>
+
+<div class="alert alert-danger">
+
+<?php echo $error; ?>
+
+</div>
+
+<?php
+}
+?>
 
 <form method="POST">
 
-<input type="text" name="title" placeholder="Title" required>
-<br><br>
+<div class="mb-3">
 
-<textarea name="content" placeholder="Content" required></textarea>
-<br><br>
+<label class="form-label">
 
-<button name="submit">Create Post</button>
+Title
+
+</label>
+
+<input
+type="text"
+name="title"
+class="form-control"
+required>
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Content
+
+</label>
+
+<textarea
+name="content"
+class="form-control"
+rows="6"
+required></textarea>
+
+</div>
+
+<button
+type="submit"
+name="submit"
+class="btn btn-success">
+
+Create Post
+
+</button>
+
+<a href="dashboard.php"
+class="btn btn-secondary">
+
+Back
+
+</a>
+
+<a href="index.php"
+class="btn btn-primary">
+
+View Posts
+
+</a>
 
 </form>
 
-<br>
-<a href="dashboard.php">Back</a>
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
